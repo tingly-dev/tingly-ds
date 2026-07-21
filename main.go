@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	appName     = "DeepSeek Shell"
+	appName     = "Tingly DS"
 	deepSeekURL = "https://chat.deepseek.com/"
 )
 

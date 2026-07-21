@@ -1,4 +1,4 @@
-# DeepSeek Desktop Shell — Test Report
+# Tingly DS — Test Report
 
 **Date**: 2026-07-21
 **Status**: PASS
@@ -16,7 +16,7 @@
 | Navigation policy | PASS | `externalURLFromMessage` 96.2%; `isDeepSeekURL` 100% |
 | Embedded icon integrity | PASS | Both 640×640 tray PNGs decode in `assets_test.go` |
 | Production build | PASS | arm64 Mach-O built with the Wails `production` tag |
-| macOS package | PASS | `wails3 package` generated `bin/DeepSeekShell.app` |
+| macOS package | PASS | `wails3 package` generated `bin/TinglyDS.app` |
 | Bundle metadata | PASS | `plutil -lint`; `CFBundleIconFile=AppIcon.icns` |
 | Signature | PASS | `codesign --verify --deep --strict` |
 

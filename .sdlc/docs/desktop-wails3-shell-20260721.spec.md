@@ -1,4 +1,4 @@
-# DeepSeek Desktop Shell (Wails 3) Specification
+# Tingly DS (Wails 3) Specification
 
 **Version**: 0.1.0
 **Status**: Implemented and validated on macOS arm64
@@ -39,6 +39,7 @@ authentication dialogs do not make the chat window disappear on focus loss.
 ### Non-functional requirements
 
 - Pin `github.com/wailsapp/wails/v3` to `v3.0.0-alpha2.114` and use Go 1.25+.
+- Use `github.com/tingly-dev/tingly-ds` as the Go module path.
 - Use no frontend framework and no bundled browser engine.
 - Keep source, tests, build metadata, and SDLC records at the repository root.
 - Support macOS arm64 immediately and avoid blocking later Windows builds.

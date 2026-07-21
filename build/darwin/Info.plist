@@ -4,13 +4,13 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleName</key>
-    <string>DeepSeek Shell</string>
+    <string>Tingly DS</string>
     <key>CFBundleDisplayName</key>
-    <string>DeepSeek Shell</string>
+    <string>Tingly DS</string>
     <key>CFBundleExecutable</key>
-    <string>deepseek-shell</string>
+    <string>tingly-ds</string>
     <key>CFBundleIdentifier</key>
-    <string>dev.tingly.deepseek-shell</string>
+    <string>dev.tingly.tingly-ds</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon.icns</string>
     <key>CFBundleVersion</key>

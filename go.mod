@@ -1,4 +1,4 @@
-module tingly.dev/deepseek-shell
+module github.com/tingly-dev/tingly-ds
 
 go 1.25.0
 

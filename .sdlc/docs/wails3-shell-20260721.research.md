@@ -1,4 +1,4 @@
-# Wails 3 DeepSeek Shell — Research Summary
+# Tingly DS — Wails 3 Research Summary
 
 **Topic:** A lightweight, menu-bar-accessible wrapper for DeepSeek Chat.
 

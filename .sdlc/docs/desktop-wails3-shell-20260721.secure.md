@@ -1,4 +1,4 @@
-# DeepSeek Desktop Shell — Security Report
+# Tingly DS — Security Report
 
 **Date**: 2026-07-21
 **Status**: PASS

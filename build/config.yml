@@ -1,9 +1,9 @@
 version: '3'
 
 info:
-  companyName: Tingly
-  productName: DeepSeek Shell
-  productIdentifier: dev.tingly.deepseek-shell
+  companyName: Tingly Dev
+  productName: Tingly DS
+  productIdentifier: dev.tingly.tingly-ds
   description: Lightweight DeepSeek desktop shell
   copyright: Copyright 2026
   comments: Personal desktop WebView shell

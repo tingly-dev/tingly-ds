@@ -1,8 +1,9 @@
-# DeepSeek Shell — Wails 3
+# Tingly DS
 
-A small Go/Wails 3 desktop wrapper for `https://chat.deepseek.com/`. It uses the
-operating system WebView rather than bundling Chromium and is controlled from a
-menu-bar/system-tray entry.
+Tingly DS is a small Go/Wails 3 desktop wrapper for
+`https://chat.deepseek.com/`. Its Go module is
+`github.com/tingly-dev/tingly-ds`. It uses the operating system WebView rather
+than bundling Chromium and is controlled from a menu-bar/system-tray entry.
 
 ## Behaviour
 
@@ -52,7 +53,7 @@ wails3 dev -config ./build/config.yml
 wails3 package
 ```
 
-The ad-hoc signed bundle is written to `bin/DeepSeekShell.app`. Ad-hoc signing
+The ad-hoc signed bundle is written to `bin/TinglyDS.app`. Ad-hoc signing
 is suitable for local use. Distribution to other Macs still requires a
 Developer ID signature and Apple notarisation.
 

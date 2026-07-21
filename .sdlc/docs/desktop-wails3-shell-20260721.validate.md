@@ -1,4 +1,4 @@
-# DeepSeek Desktop Shell — Goal Validation
+# Tingly DS — Goal Validation
 
 **Date**: 2026-07-21
 **Status**: PASS

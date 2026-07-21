@@ -1,4 +1,4 @@
-# DeepSeek Desktop Shell — Code Review
+# Tingly DS — Code Review
 
 **Date**: 2026-07-21
 **Target**: macOS arm64 Wails 3 MVP
