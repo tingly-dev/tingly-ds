@@ -27,14 +27,17 @@ authentication dialogs do not make the chat window disappear on focus loss.
 
 1. Load DeepSeek Chat in a persistent native WebView.
 2. Show the main window on normal application launch.
-3. Toggle and focus the window with a left click on the tray icon.
-4. Provide tray actions: Open/Hide, Reload, Open in Browser, and Quit.
-5. Hide rather than destroy the window when the close button is used.
-6. Hide the window on Escape.
-7. Keep DeepSeek HTTPS links in the WebView.
-8. Open unrelated HTTP(S) anchor links in the default browser.
-9. Preserve normal WebView cookies, local storage, and cache between launches.
-10. Use the DeepSeek mark for both the native application and tray entry.
+3. Appear as a normal application in the macOS Dock while retaining the tray.
+4. Restore the hidden window when its Dock icon is clicked.
+5. Toggle and focus the window with a left click on the tray icon.
+6. Provide tray actions: Open/Hide, Reload, Open in Browser, and Quit.
+7. Hide rather than destroy the window when the close button is used.
+8. Hide the window on Escape.
+9. Keep DeepSeek HTTPS links in the WebView.
+10. Open unrelated HTTP(S) anchor links in the default browser.
+11. Preserve normal WebView cookies, local storage, and cache between launches
+    and rebuilds by keeping the packaged application identity stable.
+12. Use the DeepSeek mark for both the native application and tray entry.
 
 ### Non-functional requirements
 
@@ -61,6 +64,7 @@ authentication dialogs do not make the chat window disappear on focus loss.
 
 ```text
 launch -> create WebView -> show window
+dock click while hidden -> show window (Wails macOS common-event handling)
 tray left click -> show/focus OR hide
 window close / Escape -> hide, keep WebView alive
 tray Reload -> reload current page
@@ -112,6 +116,9 @@ is ignored.
 - Run `gofmt`, `go test ./...`, `go vet ./...`, and `go build`.
 - Run the Wails production package task and inspect the generated `.app`.
 - Verify the generated `.icns`, bundle icon key, and embedded tray PNGs.
+- Verify `LSUIElement` is absent and the bundle identifier/executable remain
+  `dev.tingly.tingly-ds` / `tingly-ds`.
+- Rebuild and replace the `.app`, then verify the DeepSeek login remains.
 - If GUI execution is available, verify initial load, tray toggle, close-to-hide,
   reload, external links, and file input.
 
