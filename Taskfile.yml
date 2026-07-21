@@ -1,0 +1,82 @@
+version: '3'
+
+vars:
+  APP_NAME: deepseek-shell
+  APP_BUNDLE: DeepSeekShell.app
+  BIN_DIR: bin
+
+tasks:
+  build:
+    summary: Build the native application
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}"
+      - >-
+        go build
+        {{if eq .DEV "true"}}-buildvcs=false{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{end}}
+        -o "{{.BIN_DIR}}/{{.APP_NAME}}" .
+    env:
+      CGO_CFLAGS: -mmacosx-version-min=12.0
+      CGO_LDFLAGS: -mmacosx-version-min=12.0
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+
+  test:
+    summary: Format, vet, and test the Go module
+    cmds:
+      - gofmt -w assets.go assets_test.go main.go navigation.go navigation_test.go
+      - go vet ./...
+      - go test ./...
+    env:
+      CGO_CFLAGS: -mmacosx-version-min=12.0
+      CGO_LDFLAGS: -mmacosx-version-min=12.0
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+
+  run:
+    summary: Build and run a development binary
+    deps:
+      - task: build
+        vars:
+          DEV: 'true'
+    cmds:
+      - task: run:binary
+
+  run:binary:
+    internal: true
+    cmds:
+      - '"./{{.BIN_DIR}}/{{.APP_NAME}}"'
+
+  dev:
+    summary: Run with Wails file watching
+    cmds:
+      - wails3 dev -config ./build/config.yml
+
+  package:
+    summary: Build an ad-hoc signed macOS app bundle
+    platforms: [darwin]
+    deps:
+      - task: build
+      - task: icons:darwin
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/MacOS"
+      - mkdir -p "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/Resources"
+      - cp "{{.BIN_DIR}}/{{.APP_NAME}}" "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/MacOS/{{.APP_NAME}}"
+      - cp build/darwin/Info.plist "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/Info.plist"
+      - cp "{{.BIN_DIR}}/AppIcon.icns" "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/Resources/AppIcon.icns"
+      - codesign --force --deep --sign - "{{.BIN_DIR}}/{{.APP_BUNDLE}}"
+
+  icons:darwin:
+    summary: Generate a macOS icon set from the official DeepSeek avatar
+    internal: true
+    platforms: [darwin]
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}/AppIcon.iconset"
+      - sips -s format png -z 16 16 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16.png"
+      - sips -s format png -z 32 32 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16@2x.png"
+      - sips -s format png -z 32 32 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32.png"
+      - sips -s format png -z 64 64 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32@2x.png"
+      - sips -s format png -z 128 128 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128.png"
+      - sips -s format png -z 256 256 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128@2x.png"
+      - sips -s format png -z 256 256 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256.png"
+      - sips -s format png -z 512 512 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256@2x.png"
+      - sips -s format png -z 512 512 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512.png"
+      - sips -s format png -z 1024 1024 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512@2x.png"
+      - iconutil -c icns "{{.BIN_DIR}}/AppIcon.iconset" -o "{{.BIN_DIR}}/AppIcon.icns"

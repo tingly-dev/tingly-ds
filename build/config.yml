@@ -1,0 +1,32 @@
+version: '3'
+
+info:
+  companyName: Tingly
+  productName: DeepSeek Shell
+  productIdentifier: dev.tingly.deepseek-shell
+  description: Lightweight DeepSeek desktop shell
+  copyright: Copyright 2026
+  comments: Personal desktop WebView shell
+  version: 0.1.0
+
+dev_mode:
+  root_path: .
+  log_level: warn
+  debounce: 500
+  ignore:
+    dir:
+      - .git
+      - .sdlc
+      - bin
+    file:
+      - .DS_Store
+      - "*_test.go"
+    watched_extension:
+      - "*.go"
+      - "*.yml"
+  git_ignore: true
+  executes:
+    - cmd: wails3 build DEV=true
+      type: blocking
+    - cmd: wails3 task run:binary
+      type: primary

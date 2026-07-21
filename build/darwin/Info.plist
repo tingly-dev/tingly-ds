@@ -1,0 +1,31 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleName</key>
+    <string>DeepSeek Shell</string>
+    <key>CFBundleDisplayName</key>
+    <string>DeepSeek Shell</string>
+    <key>CFBundleExecutable</key>
+    <string>deepseek-shell</string>
+    <key>CFBundleIdentifier</key>
+    <string>dev.tingly.deepseek-shell</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon.icns</string>
+    <key>CFBundleVersion</key>
+    <string>0.1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow DeepSeek voice input when you request it.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow DeepSeek camera access when you request it.</string>
+</dict>
+</plist>
