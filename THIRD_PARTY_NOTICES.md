@@ -16,6 +16,9 @@ the `lobehub/lobe-icons` repository:
   - Source: `packages/static-png/light/deepseek.png`
   - SHA-256: `8e0fd5830630f21d38bd57a277008149c3d73c77f3c41afe6cd102239b3ee2e7`
 
+`build/icons/deepseek-dock.png` is a project-created Dock treatment derived
+from `deepseek-color.png`. It places the unchanged mark on a light rounded tile.
+
 Lobe Icons is distributed under the following MIT licence. DeepSeek names and
 marks remain the property of their respective owner.
 

@@ -22,7 +22,9 @@ func main() {
 	app = application.New(application.Options{
 		Name:        appName,
 		Description: "A lightweight desktop shell for DeepSeek Chat",
-		Icon:        deepSeekColorIcon,
+		// The application icon needs its own tile; the transparent mark is kept
+		// for system-tray surfaces where the OS supplies the background.
+		Icon: deepSeekDockIcon,
 		Mac: application.MacOptions{
 			// Keep the app in the Dock while retaining the menu-bar tray entry.
 			ActivationPolicy: application.ActivationPolicyRegular,

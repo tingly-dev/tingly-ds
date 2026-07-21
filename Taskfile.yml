@@ -4,6 +4,7 @@ vars:
   APP_NAME: tingly-ds
   APP_BUNDLE: TinglyDS.app
   BIN_DIR: bin
+  DOCK_ICON: build/icons/deepseek-dock.png
 
 tasks:
   build:
@@ -64,19 +65,19 @@ tasks:
       - codesign --force --deep --sign - "{{.BIN_DIR}}/{{.APP_BUNDLE}}"
 
   icons:darwin:
-    summary: Generate a macOS icon set from the official DeepSeek avatar
+    summary: Generate a macOS icon set from the tiled DeepSeek Dock icon
     internal: true
     platforms: [darwin]
     cmds:
       - mkdir -p "{{.BIN_DIR}}/AppIcon.iconset"
-      - sips -s format png -z 16 16 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16.png"
-      - sips -s format png -z 32 32 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16@2x.png"
-      - sips -s format png -z 32 32 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32.png"
-      - sips -s format png -z 64 64 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32@2x.png"
-      - sips -s format png -z 128 128 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128.png"
-      - sips -s format png -z 256 256 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128@2x.png"
-      - sips -s format png -z 256 256 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256.png"
-      - sips -s format png -z 512 512 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256@2x.png"
-      - sips -s format png -z 512 512 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512.png"
-      - sips -s format png -z 1024 1024 build/icons/deepseek-app.webp --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512@2x.png"
+      - sips -s format png -z 16 16 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16.png"
+      - sips -s format png -z 32 32 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_16x16@2x.png"
+      - sips -s format png -z 32 32 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32.png"
+      - sips -s format png -z 64 64 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_32x32@2x.png"
+      - sips -s format png -z 128 128 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128.png"
+      - sips -s format png -z 256 256 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_128x128@2x.png"
+      - sips -s format png -z 256 256 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256.png"
+      - sips -s format png -z 512 512 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_256x256@2x.png"
+      - sips -s format png -z 512 512 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512.png"
+      - sips -s format png -z 1024 1024 "{{.DOCK_ICON}}" --out "{{.BIN_DIR}}/AppIcon.iconset/icon_512x512@2x.png"
       - iconutil -c icns "{{.BIN_DIR}}/AppIcon.iconset" -o "{{.BIN_DIR}}/AppIcon.icns"
