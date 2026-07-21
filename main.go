@@ -24,7 +24,8 @@ func main() {
 		Description: "A lightweight desktop shell for DeepSeek Chat",
 		Icon:        deepSeekColorIcon,
 		Mac: application.MacOptions{
-			ActivationPolicy: application.ActivationPolicyAccessory,
+			// Keep the app in the Dock while retaining the menu-bar tray entry.
+			ActivationPolicy: application.ActivationPolicyRegular,
 		},
 		Windows: application.WindowsOptions{
 			DisableQuitOnLastWindowClosed: true,

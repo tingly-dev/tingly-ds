@@ -22,7 +22,7 @@ tasks:
   test:
     summary: Format, vet, and test the Go module
     cmds:
-      - gofmt -w assets.go assets_test.go main.go navigation.go navigation_test.go
+      - gofmt -w assets.go assets_test.go main.go navigation.go navigation_test.go packaging_test.go
       - go vet ./...
       - go test ./...
     env:
