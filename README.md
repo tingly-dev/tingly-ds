@@ -6,6 +6,10 @@ Tingly DS is a small Go/Wails 3 desktop wrapper for
 than bundling Chromium and behaves like a normal Dock application while also
 providing a menu-bar/system-tray entry.
 
+## Preview
+
+![](./doc/tingly-ds.jpeg)
+
 ## Behaviour
 
 - The window opens on launch and the app remains available from both the Dock
