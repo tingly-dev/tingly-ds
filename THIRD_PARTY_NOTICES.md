@@ -1,5 +1,27 @@
 # Third-party notices
 
+## DeepSeek — name, marks, and service
+
+**DeepSeek** and the DeepSeek logo are trademarks, names, and brands of their
+respective owner (DeepSeek / 深度求索). This project is an independent,
+unofficial desktop shell and is **not affiliated with, endorsed by, or
+sponsored by DeepSeek**.
+
+All rights, title, and interest in the DeepSeek name, wordmark, icon, and
+branding remain the sole property of DeepSeek. They are used here solely to
+identify the service this desktop shell connects to (`https://chat.deepseek.com/`),
+and the app must not be represented as an official DeepSeek product. The
+DeepSeek chat service itself, including its content and functionality, is
+governed by DeepSeek's own terms of service and is not part of this project.
+
+**Ownership declaration:** All DeepSeek-related intellectual property —
+including but not limited to the name "DeepSeek" (深度求索), the wordmark,
+the whale logo and icon, trade dress, the chat service, and any associated
+branding — is owned entirely by DeepSeek and its official entities. No rights
+to these are claimed or transferred by this project. If DeepSeek or its
+representatives request removal or modification of any marks, the project
+will comply promptly.
+
 ## DeepSeek icon assets
 
 The DeepSeek application and system-tray marks were retrieved on 2026-07-21
