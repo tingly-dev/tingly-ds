@@ -2,9 +2,9 @@
 
 Tingly DS is a small Go/Wails 3 desktop wrapper for
 `https://chat.deepseek.com/`. Its Go module is
-`github.com/tingly-dev/tingly-ds`. It uses the operating system WebView rather
-than bundling Chromium and behaves like a normal Dock application while also
-providing a menu-bar/system-tray entry.
+`github.com/tingly-dev/tingly-ds`. It uses the operating-system WebView rather
+than bundling Chromium and provides a normal application window plus a
+menu-bar/system-tray entry on macOS, Windows, and Linux.
 
 ## Preview
 
@@ -12,76 +12,85 @@ providing a menu-bar/system-tray entry.
 
 ## Behaviour
 
-- The window opens on launch and the app remains available from both the Dock
-  and the menu bar.
-- Clicking the Dock icon restores the window after it has been hidden.
-- Left-click the DeepSeek icon in the macOS menu bar to show or hide the window.
-- Right-click the tray entry for Show, Hide, Reload, Open in Browser, and Quit.
+- The window opens on launch and remains available from the application icon and
+  system tray.
+- Clicking the tray icon shows or hides the window.
+- The tray menu provides Show, Hide, Reload, Open in Browser, and Quit.
 - Closing the window or pressing Escape hides it without ending the process.
 - DeepSeek links stay embedded; unrelated HTTP(S) anchor links open in the
   default browser.
 
+On Linux, tray visibility depends on status-notifier support in the desktop
+environment. Some GNOME installations require an AppIndicator extension.
+
 ## User data and login persistence
 
-Tingly DS uses WebKit's normal persistent website-data store. DeepSeek cookies,
-local storage, and cache live in the user's macOS Library, outside the `.app`
-bundle and outside this source tree. Rebuilding or replacing `TinglyDS.app`
-therefore does not reset the login session.
+Tingly DS uses each operating system WebView's persistent website-data store.
+DeepSeek cookies, local storage, and cache live outside the application artifact,
+so replacing the `.app`, `.exe`, or AppImage does not normally reset login:
 
-The packaged identity must remain stable for WebKit to find the same profile:
+- macOS: WKWebView data under the user's Library.
+- Windows: WebView2 data under the user's local application data.
+- Linux: WebKitGTK data under the user's XDG data/cache directories.
 
-- bundle identifier: `dev.tingly.tingly-ds`
-- executable: `tingly-ds`
+The packaged identity must remain stable for the WebView to find the same
+profile:
 
-Use `bin/TinglyDS.app` (or copy it to `/Applications`) for normal use. A binary
-started directly with `wails3 task run` is a development process and may use a
-separate WebKit profile. Changing the bundle identifier/executable name, or
-manually clearing WebKit website data, can also require signing in again.
+- application identifier: `dev.tingly.tingly-ds`
+- executable/program name: `tingly-ds`
 
-## Requirements
+A binary started through the development workflow may use a separate profile.
+Changing the identity or manually clearing native WebView data can require
+signing in again.
 
-- macOS 12 or newer for the provided package metadata.
-- Xcode Command Line Tools (`xcode-select --install`) for the compiler,
-  `iconutil`, and `codesign`.
-- Go 1.25 or newer (the pinned Wails module raises the module directive to
-  Go 1.25 during `go mod tidy`).
+## Common requirements
+
+- Go 1.25 or newer.
 - Wails CLI matching the pinned module version:
 
   ```sh
   go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
   ```
 
-Wails 3 is still prerelease software. Re-run the full test and package workflow
+Wails 3 is prerelease software. Re-run the complete native smoke-test checklist
 before changing its pinned version.
 
-The currently implemented and verified release target is macOS arm64. The code
-keeps later Windows/Linux ports straightforward, but those targets are not yet
-claimed as supported; Wails alpha remote-URL injection and origin metadata must
-be validated on each target before release.
+### macOS
+
+- macOS 12 or newer.
+- Xcode Command Line Tools (`xcode-select --install`) for the compiler,
+  `iconutil`, and `codesign`.
+
+### Windows
+
+- Windows 10 or 11.
+- Microsoft Edge WebView2 Runtime. Current Windows installations normally have
+  the evergreen runtime; otherwise install it from Microsoft.
+- A native Go/Wails build environment. No NSIS or MSIX tooling is needed for the
+  baseline `.exe` artifact.
+
+### Linux
+
+- A desktop Linux distribution with GTK3, WebKitGTK, and system-tray/AppIndicator
+  support.
+- A C compiler and the development packages required by Wails. Package names
+  vary by distribution; run `wails3 doctor` for host-specific guidance.
+- Network access while creating an AppImage, because the Wails generator obtains
+  its AppImage tooling during packaging.
 
 ## Build from source
-
-Clone the repository and install the exact Wails CLI version used by the Go
-module:
 
 ```sh
 git clone https://github.com/tingly-dev/tingly-ds.git
 cd tingly-ds
 go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
 go mod download
-```
-
-Run the checks and create the application bundle:
-
-```sh
 wails3 task test
-wails3 package
-open bin/TinglyDS.app
+wails3 task build
 ```
 
-For a stable daily-use location, quit Tingly DS and copy the complete
-`bin/TinglyDS.app` bundle into `/Applications`. Future builds can replace that
-bundle without deleting the WebKit login data stored in the user Library.
+The native development artifact is written to `bin/tingly-ds` on macOS/Linux or
+`bin/tingly-ds.exe` on Windows.
 
 ## Develop
 
@@ -97,16 +106,48 @@ For file watching:
 wails3 dev -config ./build/config.yml
 ```
 
-## Package for macOS
+## Package
+
+Run the same command on the target operating system:
 
 ```sh
 wails3 package
 ```
 
-The ad-hoc signed bundle is written to `bin/TinglyDS.app`. The application has
-both a Dock icon and a menu-bar icon. Ad-hoc signing is suitable for local use.
-Distribution to other Macs still requires a
-Developer ID signature and Apple notarisation.
+It dispatches to the current platform:
+
+| Platform | Artifact | Notes |
+| --- | --- | --- |
+| macOS | `bin/TinglyDS.app` | Ad-hoc signed for local use |
+| Windows | `bin/tingly-ds.exe` | GUI executable with icon, manifest, and version resources |
+| Linux | `bin/tingly-ds-*.AppImage` | AppImage with freedesktop desktop metadata |
+
+You can also call `wails3 task package:darwin`, `package:windows`, or
+`package:linux` explicitly on the matching host. Linux and Windows artifacts
+must be built natively; Linux requires CGO and its WebKitGTK libraries.
+
+The generated artifacts are unsigned release baselines. Public macOS distribution
+still requires Developer ID signing and notarisation; Windows distribution
+should use Authenticode and an installer; Linux repository packages should be
+signed according to the target distribution. NSIS, MSIX, deb, rpm, and Arch
+packages are not part of the current baseline.
+
+## Native release verification
+
+Before publishing a build on each target, launch the packaged artifact and
+verify:
+
+1. DeepSeek loads and login succeeds.
+2. close and Escape hide without quitting;
+3. tray click and every tray menu action work;
+4. login survives quit, relaunch, and artifact replacement;
+5. unrelated links open in the default browser while DeepSeek links remain in
+   the app;
+6. upload, download, microphone, camera, clipboard, and notifications behave as
+   expected for the native WebView.
+
+Build metadata and Go tests can be checked on any host, but WebView2 and
+WebKitGTK runtime behavior must be exercised on Windows and Linux respectively.
 
 The app and tray marks are DeepSeek assets downloaded from
 [LobeHub Icons](https://lobehub.com/icons/deepseek). Their exact source URLs,
@@ -121,7 +162,9 @@ checksums, and Lobe Icons licence notice are recorded in
 - Web permissions use the operating-system prompt/default policy.
 - The sole raw bridge message can only request that a validated HTTP(S) URL be
   opened in the system browser, and only from the main DeepSeek frame.
+- The Windows manifest runs with the caller's standard privileges and does not
+  request elevation.
 
 External-link interception is deliberately small and best-effort. DeepSeek can
-change its frontend or login flow, so login, uploads, downloads, and external
-links should be manually checked after major website or WebView updates.
+change its frontend or login flow, so repeat the native verification checklist
+after major website or WebView updates.

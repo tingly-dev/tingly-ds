@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Tingly DS
+Exec=tingly-ds
+Icon=tingly-ds
+Categories=Network;InstantMessaging;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=true

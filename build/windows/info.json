@@ -1,0 +1,15 @@
+{
+  "fixed": {
+    "file_version": "0.1.0"
+  },
+  "info": {
+    "0000": {
+      "ProductVersion": "0.1.0",
+      "CompanyName": "Tingly Dev",
+      "FileDescription": "Lightweight DeepSeek desktop shell",
+      "LegalCopyright": "Copyright 2026 Tingly Dev",
+      "ProductName": "Tingly DS",
+      "Comments": "Personal desktop WebView shell"
+    }
+  }
+}

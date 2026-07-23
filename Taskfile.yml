@@ -10,6 +10,14 @@ tasks:
   build:
     summary: Build the native application
     cmds:
+      - task: build:darwin
+      - task: build:windows
+      - task: build:linux
+
+  build:darwin:
+    internal: true
+    platforms: [darwin]
+    cmds:
       - mkdir -p "{{.BIN_DIR}}"
       - >-
         go build
@@ -20,16 +28,40 @@ tasks:
       CGO_LDFLAGS: -mmacosx-version-min=12.0
       MACOSX_DEPLOYMENT_TARGET: '12.0'
 
+  build:windows:
+    internal: true
+    platforms: [windows]
+    deps: [generate:windows:resources]
+    cmds:
+      - powershell -NoProfile -Command "New-Item -ItemType Directory -Force -Path '{{.BIN_DIR}}' | Out-Null"
+      - >-
+        go build
+        {{if eq .DEV "true"}}-buildvcs=false{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui"{{end}}
+        -o "{{.BIN_DIR}}/{{.APP_NAME}}.exe" .
+      - powershell -NoProfile -Command "Remove-Item -Force 'wails_windows_{{.ARCH}}.syso'"
+    env:
+      CGO_ENABLED: '0'
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+
+  build:linux:
+    internal: true
+    platforms: [linux]
+    cmds:
+      - mkdir -p "{{.BIN_DIR}}"
+      - >-
+        go build
+        {{if eq .DEV "true"}}-buildvcs=false{{else}}-tags production -trimpath -buildvcs=false -ldflags="-w -s"{{end}}
+        -o "{{.BIN_DIR}}/{{.APP_NAME}}" .
+    env:
+      CGO_ENABLED: '1'
+
   test:
     summary: Format, vet, and test the Go module
     cmds:
       - gofmt -w assets.go assets_test.go main.go navigation.go navigation_test.go packaging_test.go
       - go vet ./...
       - go test ./...
-    env:
-      CGO_CFLAGS: -mmacosx-version-min=12.0
-      CGO_LDFLAGS: -mmacosx-version-min=12.0
-      MACOSX_DEPLOYMENT_TARGET: '12.0'
 
   run:
     summary: Build and run a development binary
@@ -43,7 +75,10 @@ tasks:
   run:binary:
     internal: true
     cmds:
-      - '"./{{.BIN_DIR}}/{{.APP_NAME}}"'
+      - cmd: '"./{{.BIN_DIR}}/{{.APP_NAME}}"'
+        platforms: [darwin, linux]
+      - cmd: 'powershell -NoProfile -Command "& ''./{{.BIN_DIR}}/{{.APP_NAME}}.exe''"'
+        platforms: [windows]
 
   dev:
     summary: Run with Wails file watching
@@ -51,10 +86,17 @@ tasks:
       - wails3 dev -config ./build/config.yml
 
   package:
+    summary: Package the application for the current platform
+    cmds:
+      - task: package:darwin
+      - task: package:windows
+      - task: package:linux
+
+  package:darwin:
     summary: Build an ad-hoc signed macOS app bundle
     platforms: [darwin]
     deps:
-      - task: build
+      - task: build:darwin
       - task: icons:darwin
     cmds:
       - mkdir -p "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/MacOS"
@@ -63,6 +105,63 @@ tasks:
       - cp build/darwin/Info.plist "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/Info.plist"
       - cp "{{.BIN_DIR}}/AppIcon.icns" "{{.BIN_DIR}}/{{.APP_BUNDLE}}/Contents/Resources/AppIcon.icns"
       - codesign --force --deep --sign - "{{.BIN_DIR}}/{{.APP_BUNDLE}}"
+
+  package:windows:
+    summary: Build a Windows executable with native resources
+    platforms: [windows]
+    cmds:
+      - task: build:windows
+        vars:
+          DEV: 'false'
+          ARCH: '{{.ARCH}}'
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+
+  package:linux:
+    summary: Build a Linux AppImage
+    platforms: [linux]
+    deps:
+      - task: build:linux
+      - task: generate:linux:desktop
+    cmds:
+      - cp "{{.DOCK_ICON}}" "build/linux/appimage/{{.APP_NAME}}.png"
+      - >-
+        wails3 generate appimage
+        -binary "{{.ROOT_DIR}}/{{.BIN_DIR}}/{{.APP_NAME}}"
+        -icon "{{.ROOT_DIR}}/build/linux/appimage/{{.APP_NAME}}.png"
+        -desktopfile "{{.ROOT_DIR}}/build/linux/{{.APP_NAME}}.desktop"
+        -outputdir "{{.ROOT_DIR}}/{{.BIN_DIR}}"
+        -builddir "{{.ROOT_DIR}}/build/linux/appimage/build"
+
+  generate:windows:resources:
+    summary: Generate Windows icon, manifest, and version resources
+    internal: true
+    platforms: [windows]
+    cmds:
+      - >-
+        wails3 generate syso
+        -arch {{.ARCH}}
+        -icon build/windows/icon.ico
+        -manifest build/windows/wails.exe.manifest
+        -info build/windows/info.json
+        -out wails_windows_{{.ARCH}}.syso
+    vars:
+      ARCH: '{{.ARCH | default ARCH}}'
+
+  generate:linux:desktop:
+    summary: Generate the Linux desktop entry
+    internal: true
+    platforms: [linux]
+    cmds:
+      - mkdir -p build/linux/appimage
+      - >-
+        wails3 generate .desktop
+        -name "Tingly DS"
+        -exec "{{.APP_NAME}}"
+        -icon "{{.APP_NAME}}"
+        -outputfile "build/linux/{{.APP_NAME}}.desktop"
+        -categories "Network;InstantMessaging;"
+      - sed -i 's/StartupNotify=false/StartupNotify=true/' "build/linux/{{.APP_NAME}}.desktop"
 
   icons:darwin:
     summary: Generate a macOS icon set from the tiled DeepSeek Dock icon

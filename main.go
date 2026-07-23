@@ -32,6 +32,10 @@ func main() {
 		Windows: application.WindowsOptions{
 			DisableQuitOnLastWindowClosed: true,
 		},
+		Linux: application.LinuxOptions{
+			DisableQuitOnLastWindowClosed: true,
+			ProgramName:                   "tingly-ds",
+		},
 		ShouldQuit: func() bool {
 			quitting.Store(true)
 			return true
