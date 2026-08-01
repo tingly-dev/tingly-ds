@@ -34,10 +34,10 @@ jobs:
             os: windows-latest
             goarch: amd64
             platform: windows
-          - name: Linux x86_64
-            os: ubuntu-24.04
-            goarch: amd64
-            platform: linux
+          # - name: Linux x86_64
+          #   os: ubuntu-24.04
+          #   goarch: amd64
+          #   platform: linux
 
     runs-on: ${{ matrix.os }}
     defaults:
