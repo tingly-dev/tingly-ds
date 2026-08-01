@@ -16,6 +16,14 @@ const (
 )
 
 func main() {
+	// Enforce a single running instance as early as possible, before any window
+	// or app object is constructed. A second instance signals the primary to
+	// surface its window and exits; this process keeps going only when it owns
+	// the lock.
+	if DetectInstance(appName) == InstanceSecond {
+		os.Exit(0)
+	}
+
 	var quitting atomic.Bool
 	var app *application.App
 
@@ -82,6 +90,12 @@ func main() {
 		}
 		event.Cancel()
 		window.Hide()
+	})
+
+	// Now that the window exists, accept single-instance show requests: any
+	// second instance that launches will trigger showWindow here.
+	ServeInstance(func() {
+		showWindow(window)
 	})
 
 	tray := app.SystemTray.New()
