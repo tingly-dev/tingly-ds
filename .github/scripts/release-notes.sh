@@ -21,13 +21,17 @@ unsigned release baselines; see the per-platform notes below.
 
 | Platform | File | Architecture |
 | --- | --- | --- |
-| macOS | \`TinglyDS-macOS-universal.zip\` | Intel + Apple Silicon (universal) |
+| macOS | \`TinglyDS-macOS-arm64.zip\` | Apple Silicon (arm64) |
 | Windows | \`TinglyDS-Windows-x86_64.exe\` | x86_64 |
 | Linux | \`TinglyDS-Linux-x86_64.AppImage\` | x86_64 |
 
+> The macOS build is Apple Silicon (arm64) only. Intel (x86_64) Mac users can
+> build from source (see below) by running \`wails3 task build\` on the Intel
+> host.
+
 ## macOS
 
-1. Download and unzip \`TinglyDS-macOS-universal.zip\`. You get
+1. Download and unzip \`TinglyDS-macOS-arm64.zip\`. You get
    \`TinglyDS.app\`.
 2. Move \`TinglyDS.app\` into \`/Applications\`.
 3. The first launch will be **blocked by Gatekeeper** because the app is ad-hoc
