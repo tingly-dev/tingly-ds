@@ -1,0 +1,280 @@
+name: build-release
+
+# Non-tag pushes (main + pull requests) only verify that each platform builds.
+# A pushed tag (v*) builds all platforms and publishes a GitHub Release with the
+# artifacts and platform-specific usage notes.
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: write # required by softprops/action-gh-release to create releases
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS: build Intel and Apple Silicon separately, then merge into a
+          # universal binary further down so a single .app runs on both.
+          - name: macOS x86_64
+            os: macos-14
+            goarch: amd64
+            platform: darwin
+          - name: macOS arm64
+            os: macos-14
+            goarch: arm64
+            platform: darwin
+          - name: Windows x86_64
+            os: windows-latest
+            goarch: amd64
+            platform: windows
+          - name: Linux x86_64
+            os: ubuntu-22.04
+            goarch: amd64
+            platform: linux
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache: true
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
+
+      - name: Install Linux native build dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            libgl1-mesa-dev xorg-dev gcc pkg-config
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test
+        # gofmt only touches tracked files and the host arch; vet+test are
+        # portable, so they validate every platform.
+        run: wails3 task test
+
+      # ------------------------------------------------------------------ #
+      # Windows: the Taskfile generates a .syso for ARCH and removes it
+      # afterwards, so package:windows honours GOARCH. The webview2 runtime is
+      # present on the GitHub runner image; only the build is produced.
+      # ------------------------------------------------------------------ #
+      - name: Build (Windows)
+        if: matrix.platform == 'windows'
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: wails3 task package:windows
+
+      - name: Build (Linux)
+        if: matrix.platform == 'linux'
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: wails3 task package:linux
+
+      # ------------------------------------------------------------------ #
+      # macOS: package:darwin is the public entrypoint (build:darwin and
+      # icons:darwin are internal). It produces both bin/tingly-ds (the single
+      # binary, used as a slice for the universal merge) and bin/TinglyDS.app.
+      # Each slice builds natively for its GOARCH; the universal job merges them.
+      # ------------------------------------------------------------------ #
+      - name: Build (macOS single slice)
+        if: matrix.platform == 'darwin'
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: wails3 task package:darwin
+
+      # ------------------------------------------------------------------ #
+      # macOS: wait for both slices, merge with lipo, then assemble the .app
+      # bundle from the merged binary. The two slices are uploaded as separate
+      # job artifacts and consumed by the universal job via actions/download-artifact.
+      # ------------------------------------------------------------------ #
+      - name: Upload macOS slice
+        if: matrix.platform == 'darwin'
+        uses: actions/upload-artifact@v4
+        with:
+          name: slice-${{ matrix.goarch }}
+          path: bin/tingly-ds
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Stage Windows artifact
+        if: matrix.platform == 'windows'
+        run: |
+          mkdir -p staging
+          cp bin/tingly-ds.exe staging/
+
+      - name: Upload Windows artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows
+          path: staging/tingly-ds.exe
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Stage Linux artifact
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p staging
+          cp bin/tingly-ds-*.AppImage staging/tingly-ds.AppImage
+
+      - name: Upload Linux artifact
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: staging/tingly-ds.AppImage
+          if-no-files-found: error
+          retention-days: 1
+
+  macos-universal:
+    name: Build (macOS universal)
+    needs: build
+    runs-on: macos-14
+    if: always() && needs.build.result == 'success'
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download both slices
+        uses: actions/download-artifact@v4
+        with:
+          pattern: slice-*
+          merge-multiple: false
+          path: slices
+
+      - name: Merge slices into universal binary
+        run: |
+          mkdir -p bin
+          lipo -create \
+            slices/slice-amd64/tingly-ds \
+            slices/slice-arm64/tingly-ds \
+            -output bin/tingly-ds
+          echo "::group::universal binary"
+          lipo -archs bin/tingly-ds
+          file bin/tingly-ds
+          echo "::endgroup::"
+
+      # Generate AppIcon.icns directly. The Taskfile's icons:darwin task is
+      # marked internal and cannot be invoked; these are the same sips/iconutil
+      # commands it runs against build/icons/deepseek-dock.png.
+      - name: Generate app icon
+        run: |
+          set -euo pipefail
+          mkdir -p bin/AppIcon.iconset
+          src="build/icons/deepseek-dock.png"
+          gen() { sips -s format png -z "$2" "$2" "$src" --out "bin/AppIcon.iconset/$1"; }
+          gen icon_16x16.png 16
+          gen icon_16x16@2x.png 32
+          gen icon_32x32.png 32
+          gen icon_32x32@2x.png 64
+          gen icon_128x128.png 128
+          gen icon_128x128@2x.png 256
+          gen icon_256x256.png 256
+          gen icon_256x256@2x.png 512
+          gen icon_512x512.png 512
+          gen icon_512x512@2x.png 1024
+          iconutil -c icns bin/AppIcon.iconset -o bin/AppIcon.icns
+
+      # Assemble the .app by hand. Calling wails3 task package:darwin here
+      # would rebuild bin/tingly-ds for the host arch (its deps always run),
+      # clobbering the universal binary merged above.
+      - name: Assemble and sign .app bundle
+        run: |
+          set -euo pipefail
+          rm -rf bin/TinglyDS.app
+          mkdir -p bin/TinglyDS.app/Contents/MacOS
+          mkdir -p bin/TinglyDS.app/Contents/Resources
+          cp bin/tingly-ds            bin/TinglyDS.app/Contents/MacOS/tingly-ds
+          cp build/darwin/Info.plist  bin/TinglyDS.app/Contents/Info.plist
+          cp bin/AppIcon.icns         bin/TinglyDS.app/Contents/Resources/AppIcon.icns
+          codesign --force --deep --sign - bin/TinglyDS.app
+
+      - name: Create zip archive
+        run: |
+          cd bin
+          ditto -c -k --keepParent TinglyDS.app TinglyDS-macOS-universal.zip
+
+      - name: Upload universal macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-macos
+          path: bin/TinglyDS-macOS-universal.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Publish release
+    # Only tags publish. Non-tag pushes stop after verification.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, macos-universal]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Lay out release assets
+        run: |
+          mkdir -p release
+          cp artifacts/build-macos/TinglyDS-macOS-universal.zip release/
+          cp artifacts/build-windows/tingly-ds.exe release/TinglyDS-Windows-x86_64.exe
+          cp artifacts/build-linux/tingly-ds.AppImage release/TinglyDS-Linux-x86_64.AppImage
+          ls -lR release
+
+      - name: Generate release notes
+        id: notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          bash .github/scripts/release-notes.sh "$TAG" > release/RELEASE_NOTES.md
+          echo "path=release/RELEASE_NOTES.md" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: ${{ steps.notes.outputs.path }}
+          files: |
+            release/TinglyDS-macOS-universal.zip
+            release/TinglyDS-Windows-x86_64.exe
+            release/TinglyDS-Linux-x86_64.AppImage
+          fail_on_unmatched_files: true
+          generate_release_notes: false
