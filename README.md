@@ -16,7 +16,7 @@ menu-bar/system-tray entry on macOS, Windows, and Linux.
   system tray.
 - Clicking the tray icon shows or hides the window.
 - The tray menu provides Show, Hide, Reload, Open in Browser, and Quit.
-- Closing the window or pressing Escape hides it without ending the process.
+- Closing the window hides it without ending the process.
 - DeepSeek links stay embedded; unrelated HTTP(S) anchor links open in the
   default browser.
 
@@ -138,7 +138,7 @@ Before publishing a build on each target, launch the packaged artifact and
 verify:
 
 1. DeepSeek loads and login succeeds.
-2. close and Escape hide without quitting;
+2. closing the window hides without quitting;
 3. tray click and every tray menu action work;
 4. login survives quit, relaunch, and artifact replacement;
 5. unrelated links open in the default browser while DeepSeek links remain in

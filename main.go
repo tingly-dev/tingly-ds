@@ -69,7 +69,7 @@ func main() {
 		URL:                        deepSeekURL,
 		BackgroundColour:           application.NewRGB(248, 250, 252),
 		JS:                         externalLinkBridgeJS,
-		HideOnEscape:               true,
+		HideOnEscape:               false,
 		DevToolsEnabled:            false,
 		DefaultContextMenuDisabled: false,
 		EnableFileDrop:             false,
