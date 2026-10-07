@@ -92,7 +92,7 @@ instructions. Quick start:
 git clone https://github.com/tingly-dev/tingly-ds.git
 cd tingly-ds
 git checkout ${tag}
-go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.28
 wails3 task build
 \`\`\`
 EOF

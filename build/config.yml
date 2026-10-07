@@ -24,9 +24,10 @@ dev_mode:
     watched_extension:
       - "*.go"
       - "*.yml"
-  git_ignore: true
+    git_ignore: true
   executes:
     - cmd: wails3 build DEV=true
       type: blocking
     - cmd: wails3 task run:binary
       type: primary
+      exit_policy: shutdown

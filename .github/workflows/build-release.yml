@@ -69,7 +69,7 @@ jobs:
             build-essential pkg-config
 
       - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.28
 
       - name: Install Task
         uses: arduino/setup-task@v2

@@ -49,7 +49,7 @@ signing in again.
 - Wails CLI matching the pinned module version:
 
   ```sh
-  go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
+  go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.28
   ```
 
 Wails 3 is prerelease software. Re-run the complete native smoke-test checklist
@@ -83,7 +83,7 @@ before changing its pinned version.
 ```sh
 git clone https://github.com/tingly-dev/tingly-ds.git
 cd tingly-ds
-go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha2.114
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.28
 go mod download
 wails3 task test
 wails3 task build
