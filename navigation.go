@@ -59,6 +59,27 @@ const externalLinkBridgeJS = `(function () {
   }, true);
 })();`
 
+// imeEnterGuardJS drops the stray Enter keydown that WebKit fires right after
+// compositionend (bug 165004). Pages guarding with isComposing alone see that
+// key as a deliberate submit, which sends the just-committed IME text; the
+// guard records compositionend timestamps and swallows an Enter keydown that
+// follows within milliseconds.
+const imeEnterGuardJS = `(function () {
+  if (window.__deepSeekShellIMEEnterGuardInstalled) return;
+  window.__deepSeekShellIMEEnterGuardInstalled = true;
+
+  var lastCompositionEnd = 0;
+  document.addEventListener("compositionend", function () {
+    lastCompositionEnd = Date.now();
+  }, true);
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter" || event.isComposing) return;
+    if (Date.now() - lastCompositionEnd > 50) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+})();`
+
 type externalLinkRequest struct {
 	Type string `json:"type"`
 	URL  string `json:"url"`

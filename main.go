@@ -68,7 +68,7 @@ func main() {
 		MinHeight:                  520,
 		URL:                        deepSeekURL,
 		BackgroundColour:           application.NewRGB(248, 250, 252),
-		JS:                         externalLinkBridgeJS,
+		JS:                         externalLinkBridgeJS + imeEnterGuardJS,
 		HideOnEscape:               false,
 		DevToolsEnabled:            false,
 		DefaultContextMenuDisabled: false,
